@@ -3,10 +3,8 @@ import threading
 import pyttsx3 as pts
 import sys
 sys.path.append("E:\\DIJIN\\jetbrains\\Python\\project1\\src\\libs")
-
 import socket
-
-from libs.
+from libs.weather.Weather import *
 
 
 elsa=pts.init()
@@ -27,7 +25,7 @@ class Parser():
         for conective in connectives:
             if conective in stripped_array:
                 stripped_array.remove(conective)
-        weather_detials= Weather.getwether(stripped_array.pop())
+        weather_detials=getwether(stripped_array.pop())
         print(weather_detials)
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             try:
