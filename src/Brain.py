@@ -1,15 +1,14 @@
 import threading
 #from src.Alaram import alarm
 import pyttsx3 as pts
-#from src import
 import sys
-
+sys.path.append("E:\\DIJIN\\jetbrains\\Python\\project1\\src\\libs")
 
 import socket
 
-from src.libs.weather import Weather
+from libs.
 
-sys.path.append("E:\\DIJIN\\jetbrains\\Python\\project1\\src\\weather")
+
 elsa=pts.init()
 connectives=['in', 'at', 'is','a','an','and','the','are','with','for','on']
 days=['today','yesterday','tomorrow',"yesterday's","today's","tomarrows","tomorrow's"]
