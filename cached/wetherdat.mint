@@ -1,0 +1,1 @@
+{"data": "the wether at kochi is haze with teparature 28.0 with speed 4.1"}

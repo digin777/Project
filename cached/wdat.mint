@@ -1,0 +1,1 @@
+{"data": "Donald John Trump is the 45th and current president of the United States. Before entering politics, he was a businessman and television personality."}
