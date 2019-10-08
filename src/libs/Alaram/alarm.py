@@ -6,6 +6,7 @@ global count
 
 
 def newalaram(tme, count):
+    print("Alaram Seted")
     while 1:
         current = str(dt.datetime.now().time())
         current = current[:5]

@@ -1,6 +1,6 @@
 import speech_recognition as sr
 import socket
-import pyttsx3 as pts
+import pyttsx as pts
 import sys,os,threading,time
 print("Execution begin")
 api_key1 = "5db169c97645b8c606bcbc686e51fda7"
@@ -20,8 +20,9 @@ while 1:
                 try:
                     s.connect((HOST,PORT))
                     s.sendall(result.encode())
+                    time.sleep(1)
                 except (socket.gaierror,ConnectionRefusedError) as e:
-                    print("Unable Open the Socket")
+                    print("Unable Open the Socket",e.args)
                 else:
                     print("The Message is successfully sent")
             print(result)

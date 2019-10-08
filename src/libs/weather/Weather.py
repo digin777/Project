@@ -1,9 +1,9 @@
-import requests, json
-import pyowm
 api_key1 = "5db169c97645b8c606bcbc686e51fda7"
 api_key2="532d313d6a9ec4ea93eb89696983e369"
+import requests, json
+import pyowm
 base_url = "http://api.openweathermap.org/data/2.5/weather?"
-# city is not found
+
 def getwether(city):
     try:
         owm=pyowm.OWM(api_key1)
@@ -22,3 +22,20 @@ def getwether(city):
         return wether_stat
     except Exception:
         print("Internal Error")
+        
+def get16daysweather(city,country='in',cnt='2'):
+    query=f'http://api.openweathermap.org/data/2.5/forecast/daily?q={city}&cnt={cnt}&appid={api_key2}&units=metric'
+    res=requests.get(query)
+    if res.status_code==200:
+        try:
+            res=res.json()
+            resposnestr='the Weather at {} is {} with speed  {} and temparature {} degree celsius and pressure is {} '.format(res['city']['name'],res['list'][1]['weather'][0]['main'],res['list'][1]['speed'],res['list'][1]['temp']['day'],res['list'][1]['pressure'])
+            return(resposnestr)
+        except:
+            return("Canot get the Data")
+    else:
+        return("Canot get the Data")
+
+if __name__=='__main__':
+    print(get16daysweather('kochi'))
+    print(getwether('kochi'))
