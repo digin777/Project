@@ -7,13 +7,15 @@ import socket,time
 from libs.Alaram.alarm import *
 from libs.weather.Weather import *
 from libs.News import news
+from libs.IoT.IOT import *
 import logging
 elsa=pts.init()
 connectives=['in', 'at', 'is','a','an','and','the','are','with','for','on']
+connectives_IOT=['in', 'at', 'is','a','an','and','the','are','with','for']
 days=['today','yesterday','tomorrow',"yesterday's","today's","tomarrows","tomorrow's"]
 qust=['what','where','when','why','who','how','whats',"hows","how's","whos","what's","where's","wheres","whys","why's","who's"]
 info=['my','you','your','i','you’s','mine','yours',]
-commamds=['alarm','timer','headline','headlines','news','remind','weather','score','recipe','bible','nearby','reminder','trun','switch']
+commamds=['alarm','timer','headline','headlines','news','remind','weather','score','recipe','bible','nearby','reminder','turn','switch']
 HOST = '127.0.0.1'
 PORT=6373
 
@@ -84,15 +86,39 @@ class Parser():
                 
                 
     def IoT(self,inp_arry,command):
-        stripped_array=inp_arry[inp_arry.index(command)+1:]
-        print(stripped_array)
-        for connective in connectives:
+        port_map={'lbed':10,'fbed':12,'lmain':16,'fmain':18}
+        stripped_array=inp_arry[inp_arry.index(command):]
+        index_of_command=stripped_array.index(command)
+        for connective in connectives_IOT:
             if connective in stripped_array:
                 while stripped_array.count(connective)>0:
                     stripped_array.remove(connective)
-        print(stripped_array)
-        
-        
+        try:
+            state=None
+            state=stripped_array[index_of_command+1]
+            if state=='off' or state=='of':
+                state='off'
+            elif state=='on':
+                state='on'
+            room_id=None
+            print(stripped_array)
+            if (stripped_array[index_of_command+2]=='light' or stripped_array[index_of_command+2]=='lights') and ((stripped_array[index_of_command+3]=='bed' and stripped_array[index_of_command+4]=='room') or (stripped_array[index_of_command+3]=='bedroom')):
+                room_id='lbed'
+            elif (stripped_array[index_of_command+2]=='light' or stripped_array[index_of_command+2]=='lights') and ((stripped_array[index_of_command+3]=='main' and stripped_array[index_of_command+4]=='room')or (stripped_array[index_of_command+3]=='mainroom')):
+                room_id='lmain'
+            elif (stripped_array[index_of_command+2]=='fan' or stripped_array[index_of_command+2]=='fans') and ((stripped_array[index_of_command+3]=='main' and stripped_array[index_of_command+4]=='room')or (stripped_array[index_of_command+3]=='mainroom')):
+                room_id='fmain'
+            elif (stripped_array[index_of_command+2]=='fan' or stripped_array[index_of_command+2]=='fans') and ((stripped_array[index_of_command+3]=='bed' and stripped_array[index_of_command+4]=='room')or (stripped_array[index_of_command+3]=='bedroom')):
+                room_id='fbed'
+            
+            if state is not None and room_id is not None:
+                pin_No=port_map[room_id]
+                result=performIOT(pin_No,state.upper())
+            else:
+                result='Unknown command'
+        except:
+            result='Unknown command'
+            
         
         
         
@@ -118,21 +144,13 @@ class Parser():
         
         if news_from_country is not None and news_from_country in ISOCOEDS.keys():
             news_from_country=ISOCOEDS[news_from_country] #assign country codes
-        '''if news_from_country is not None:
-            parameters['country']=news_from_country
-        if news_catagory is not None:
-            prameters['category']=news_catagory'''
-        
-     #paramlist=[]
-        #for k,v in parameters.items():
-            #paramlist.append(k+'='+v)
-        #print(paramlist)
+
         headlines=news.getNews(country=news_from_country,category=news_catagory,page=2)
         if type(headlines)==list: #check werather list of head line is returened
-            headlines=headlines[:6]
+            headlines=headlines[:4]
             result=''
             for headline in headlines:
-                result+=headline+(5*'\n')
+                result+=headline+(2*'\n')
             headlines=result
             print(headlines)
         else:
@@ -157,16 +175,20 @@ class Parser():
         print(inp_arry)
         main_list=[commamds,qust,info,days,connectives]
         for command in commamds:
+            
             if command in inp_arry:
                 if command is 'weather':
                     self.wearher_checking(inp_arry,inp)
+                    break
                 elif command is 'alarm':
                     self.alaram(inp_arry)
+                    break
                 elif command is 'switch' or command is 'turn':
                     self.IoT(inp_arry,command)
+                    break
                 elif command is 'headlines' or command is 'news' or command is 'headline':
-                    print(command)
                     self.news(inp_arry,inp,command)
+                    break
                     
 
 try:
