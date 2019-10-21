@@ -1,21 +1,25 @@
 import threading
 #
 import pyttsx3 as pts
-import sys
+import sys,re
 sys.path.append("/home/pi/git/project/Project/src/libs/")
 import socket,time
+from libs.recipe.recipe import *
 from libs.Alaram.alarm import *
 from libs.weather.Weather import *
 from libs.News import news
 from libs.IoT.IOT import *
+from libs.MsgPass.msgpass import *
+from libs.wolfram.Wolfram import *
+import wikipedia as wiki
 import logging
 elsa=pts.init()
-connectives=['in', 'at', 'is','a','an','and','the','are','with','for','on']
+connectives=['in', 'at', 'is','a','an','and','the','are','with','for','on','was','of']
 connectives_IOT=['in', 'at', 'is','a','an','and','the','are','with','for']
 days=['today','yesterday','tomorrow',"yesterday's","today's","tomarrows","tomorrow's"]
 qust=['what','where','when','why','who','how','whats',"hows","how's","whos","what's","where's","wheres","whys","why's","who's"]
-info=['my','you','your','i','you’s','mine','yours',]
-commamds=['alarm','timer','headline','headlines','news','remind','weather','score','recipe','bible','nearby','reminder','turn','switch']
+info=['my','you','your','i','you’s','mine','yours','me']
+commamds=['alarm','timer','headline','headlines','news','remind','weather','score','recipe','bible','nearby','reminder','turn','switch','your','yours',"your's",'you','recipes']
 HOST = '127.0.0.1'
 PORT=6373
 
@@ -35,16 +39,8 @@ class Parser():
         print(weather_detials)
         
         #CODE FOR SENDING WEATHER DATA  TO SOCKET
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            try:
-                s.connect((HOST, 6687))
-                s.sendall(weather_detials.encode())
-            except (socket.gaierror, ConnectionRefusedError) as e:
-                print("Unable Open the Socket")
-            else:
-                print("The Message is successfully sent")
-
-
+        Msgpass(weather_detials)
+        
 
 
 
@@ -79,7 +75,6 @@ class Parser():
             if a_hour>24 or a_minute>59:
                 print("Please Provide valid Time")
             else:
-                #pass
                 setalaram(int(a_hour),int(a_minute))
                 
                 
@@ -155,28 +150,111 @@ class Parser():
             print(headlines)
         else:
             print(headlines) #error so error message is returend
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        Msgpass(headlines)
+        
+        
+        
+    def relation(self,inp_arr,command):
+        relations=['family','father','mother','brother','sister','husbend','wife','son','doughter']
+        try:
+            if inp_arr[inp_arr.index(command)+1] in relations:
+                Msgpass(f'I dont have a {inp_arr[inp_arr.index(command)+1]} i am an AI based virtual assitant developed by DSP software foundations ')
+        except:
+            Msgpass('Unknown command')
+    def wikiprocess(self,inp_arr,sinp):
+        collection=[connectives,days,qust]
+        for item in collection:
+            for connective in item:
+                if connective in inp_arr:
+                    while inp_arr.count(connective)>0:
+                        inp_arr.remove(connective)
+        query=''
+        for i in inp_arr:
+            query+=(' '+i)
+        if query is not '':
             try:
-                s.connect((HOST, 6687))
-                s.sendall(headlines.encode())
-            except (socket.gaierror, ConnectionRefusedError) as e:
-                print("Unable Open the Socket")
+                print(query)
+                res=wiki.search(query,10)
+                summary=wiki.summary(res[0],sentences=3)
+                if '(' in summary:
+                    summary = str(summary[:summary.index('('):] + summary[summary.index(')') + 2:])
+                return summary
+            except:
+                return "Could not find data"
+                
+                
+    def reminder(self,inp_arr,sinp,command):
+        index_of_command=inp_arr.index(command)
+        striped_arry=inp_arr[index_of_command:]
+        index_of_about=index_of_to =index_of_item= None
+        if 'to' in striped_arry:
+            index_of_to=striped_arry.index('to')
+           
+        if 'about' in striped_arry:
+            index_of_about=striped_arry.index('about')
+        
+        if index_of_about is not None and index_of_to is not None:
+            if index_of_to<index_of_about:
+                index_of_item=index_of_to
             else:
-                print("The Message is successfully sent")
-
-
-        
-      
-      
-        
+                index_of_item=index_of_about
+        elif index_of_about is not None and index_of_to is None:
+            index_of_item=index_of_about
+        elif index_of_to is not None and index_of_about is None:
+            index_of_item=index_of_to
+        striped_arry=striped_arry[index_of_item+1:]
+        r_time=re.findall(r'\d{1,2}(?:(?:a.m|p.m)|(?::\d{1,2})(?:a.m|p.m)?)', sinp)
+        if len(r_time) is not 0:
+            r_time=r_time.pop(0)
+            r_h=r_time.split(':').pop(0)
+            r_min=r_time.split(':').pop(1)
+            
+            state=None
+            try:
+                state=inp_arr[inp_arr.index(r_time)+1]
+                
+                if r_time in striped_arry:
+                    striped_arry.pop(striped_arry.index(r_time)+1)
+                    striped_arry.pop(striped_arry.index(r_time))
+            except IndexError as e:
+                state='a.m'
+            if state == 'p.m.':
+                r_h=int(r_h)+12
+            message=''
+            for words in striped_arry:
+                message+=words+' '
+            
+            if message is not '':
+                setreminder(int(r_h),int(r_min),message)
+            else:
+                Msgpass('Unable to set your reminder')
+            
+            
+    def recipe(self,inp_arr,sinp,command):
+        index_of_command=inp_arr.index(command)
+        stripped_array=inp_arr[index_of_command+1:]
+        for connective in connectives:
+            if connective in stripped_array:
+                while stripped_array.count(connective)>0:
+                    stripped_array.remove(connective)
+        query=''
+        for word in stripped_array:
+            query+=word+' '
+        reci=recipypuppy()
+        resdict=reci.search(query)
+        res=''
+        for k,v in resdict.items():
+            res+=k+' ingredients are '+v
+            Msgpass(res)
     def getInfo(self,inp):
+        cmdflag=0
         inp=str(inp).lower()
         inp_arry=inp.split(' ')
         print(inp_arry)
         main_list=[commamds,qust,info,days,connectives]
         for command in commamds:
-            
             if command in inp_arry:
+                cmdflag=1
                 if command is 'weather':
                     self.wearher_checking(inp_arry,inp)
                     break
@@ -189,8 +267,28 @@ class Parser():
                 elif command is 'headlines' or command is 'news' or command is 'headline':
                     self.news(inp_arry,inp,command)
                     break
-                    
-
+                elif command is 'your' or command is 'yours' or command is "your's":
+                    self.relation(inp_arry,command)
+                elif command is 'remind' or command is 'reminder':
+                    self.reminder(inp_arry,inp,command)
+                elif command is 'recipe' or command is 'recipes':
+                    self.recipe(inp_arry,inp,command)
+            else :
+                pass
+        if inp.startswith(tuple(qust)) and len(inp)>5 and cmdflag==0:
+                try:
+                    res=getwolfram(inp)
+                    print('x=',res)
+                    if '(' in res:
+                        res =res[:res.index('(')]+res[res.index(')')+1:]
+                    print('y=',res)
+                except:
+                    res='could not get the results'
+                    res=self.wikiprocess(inp_arry,inp)
+                Msgpass(res)
+                
+        
+        
 try:
     with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as s:
         s.bind((HOST,PORT))

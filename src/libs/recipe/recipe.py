@@ -3,23 +3,29 @@ import requests
 import json
 #recipy puppy  recipy finder
 class recipypuppy():
-    def search(apikey,item,pages):
-        response = requests.get("https://recipe-puppy.p.rapidapi.com/?p="+str(pages)+"&q="+item,
-                               headers={
-                                   "X-RapidAPI-Host": "recipe-puppy.p.rapidapi.com",
-                                   "X-RapidAPI-Key": apikey
-                               }
-                               )
+    def search(self,item,pages=1):
+        url = "https://recipe-puppy.p.rapidapi.com/"
+        querystring = {"p":str(pages),"q":str(item)}
+        headers = {
+            'x-rapidapi-host': "recipe-puppy.p.rapidapi.com",
+            'x-rapidapi-key': "73845cf3admsh59899f61530b896p1301e5jsnd85fc71ffe76"
+            }
+        response = requests.request("GET", url, headers=headers, params=querystring)
         if response.status_code!=200:
             print ("unable to get results")
         else:
             response=response.json()
-            print(response)
             string=""
-            for i in range(len(response.get('results'))):
-               string+=response.get('results')[i].get('title')+"\n"+response.get('results')[i].get('ingredients')+"\n"
+            recipi_dict={}
+            '''if len(response.get('results'))<5:
+                for i in range(len(response.get('results'))):
+                    recipi_dict[response.get('results')[i].get('title')]=response.get('results')[i].get('ingredients')
+            else:
+                for i in range(3):
+                    recipi_dict[response.get('results')[i].get('title')]=response.get('results')[i].get('ingredients')'''
+            recipi_dict[response.get('results')[0].get('title')]=response.get('results')[0].get('ingredients')
+            return  recipi_dict
 
-            return  string
 #nutrionix calori calculator
 class nutritonix():
     def search(apikey,item):
@@ -69,5 +75,5 @@ class newsagregator():
             for i in range(count):
                 news.append(response['results'].get(i).get('description'))
 
-a=recipypuppy
-print(a.search("73845cf3admsh59899f61530b896p1301e5jsnd85fc71ffe76","pizza",5))
+#a=recipypuppy()
+#print(a.search("omelet"))
