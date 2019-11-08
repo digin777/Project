@@ -75,7 +75,7 @@ def handle(msg):
         bot.sendMessage(chat_id,ret_str)
         
 
-bot = telepot.Bot('913652637:AAEq4thKkkkFmqJZpIcDzQbtbls2gNFupuo')
+bot = telepot.Bot('-api key-')
 bot.message_loop(handle)
 print ('I am listening...')
 
