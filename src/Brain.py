@@ -11,6 +11,7 @@ from libs.News import news
 from libs.IoT.IOT import *
 from libs.MsgPass.msgpass import *
 from libs.wolfram.Wolfram import *
+from libs.CricketScore.cricket import crickbuz
 import wikipedia as wiki
 import logging
 elsa=pts.init()
@@ -19,7 +20,7 @@ connectives_IOT=['in', 'at', 'is','a','an','and','the','are','with','for']
 days=['today','yesterday','tomorrow',"yesterday's","today's","tomarrows","tomorrow's"]
 qust=['what','where','when','why','who','how','whats',"hows","how's","whos","what's","where's","wheres","whys","why's","who's"]
 info=['my','you','your','i','you’s','mine','yours','me']
-commamds=['alarm','timer','headline','headlines','news','remind','weather','score','recipe','bible','nearby','reminder','turn','switch','your','yours',"your's",'you','recipes']
+commamds=['alarm','timer','headline','headlines','news','remind','weather','livescore','score','recipe','bible','nearby','reminder','turn','switch','your','yours',"your's",'you','recipes']
 HOST = '127.0.0.1'
 PORT=6373
 
@@ -229,7 +230,17 @@ class Parser():
             else:
                 Msgpass('Unable to set your reminder')
             
-            
+    def livescore(self):
+        crikz=crickbuz()
+        scorelist=crikz.livescore()
+        res=''
+        if type(scorelist)==list:
+            for score in scorelist:
+                res+=score+5*' \n'
+        else:
+            res=scorelist
+        Msgpass(res)
+                
     def recipe(self,inp_arr,sinp,command):
         index_of_command=inp_arr.index(command)
         stripped_array=inp_arr[index_of_command+1:]
@@ -273,6 +284,8 @@ class Parser():
                     self.reminder(inp_arry,inp,command)
                 elif command is 'recipe' or command is 'recipes':
                     self.recipe(inp_arry,inp,command)
+                elif command is 'score' or command is 'livescore':
+                    self.livescore()
             else :
                 pass
         if inp.startswith(tuple(qust)) and len(inp)>5 and cmdflag==0:

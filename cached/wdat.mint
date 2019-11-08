@@ -1,1 +1,1 @@
-{"data": "Donald John Trump is the 45th and current president of the United States. Before entering politics, he was a businessman and television personality."}
+{"data": "The president of the United States is the head of state and head of government of the United States of America. The president directs the executive branch of the federal government and is the commander-in-chief of the United States Armed Forces."}

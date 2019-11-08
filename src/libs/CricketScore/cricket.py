@@ -21,5 +21,5 @@ class crickbuz():
                 return retstr[:4]
         except:
             return retstr.append("No live matches ")
-a=crickbuz()
-print(a.livescore())
+#a=crickbuz()
+#print(a.livescore())
